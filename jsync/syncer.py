@@ -45,20 +45,15 @@ class Syncer:
             ),
             FlexiColumn(
                 lambda t: f'{sz(t.completed):>8} / {sz(t.total):<8}',
-                style="progress.download"
+                style="progress.download",
             ),
+            FlexiColumn(lambda t: f'{t.fields["eta"]}', style='cyan'),
             FlexiColumn(
-                lambda t: f'{t.fields["eta"]}',
-                style='cyan'
-            ),
-            FlexiColumn(
-                lambda t: f'{rt(t.fields["rate"]):>12}',
-                style='bright_green'
+                lambda t: f'{rt(t.fields["rate"]):>12}', style='bright_green'
             ),
             FlexiColumn(
                 lambda t: f'  {t.fields["style"]}{t.fields["filename"]:<64}'
             ),
-
         )
 
         self.master = self.progress.add_task(
@@ -98,21 +93,14 @@ class Syncer:
 
             task = self.progress._tasks[self.master]
             if task.total != ntotal:
-                self.progress.update(
-                    self.master,
-                    total=ntotal,
-                    completed=ndone
-                )
+                self.progress.update(self.master, total=ntotal, completed=ndone)
             else:
                 self.progress.advance(
-                    self.master,
-                    advance=(ndone - task.completed)
+                    self.master, advance=(ndone - task.completed)
                 )
 
     def process_itemize_error(self, err):
-        self.progress.console.print(
-            f"[red][bold]Error[/bold][/red]: {err}"
-        )
+        self.progress.console.print(f"[red][bold]Error[/bold][/red]: {err}")
 
     async def itemize(self):
         self.progress.console.print(
@@ -121,7 +109,7 @@ class Syncer:
 
         files = await self.rsync.itemize(
             progress_callback=self.process_itemize_progress,
-            error_callback=self.process_itemize_error
+            error_callback=self.process_itemize_error,
         )
 
         if not files:
@@ -134,14 +122,14 @@ class Syncer:
             fstart = i * size
             fend = fstart + size if i < self.njobs - 1 else len(files)
             self.jobs.append(
-                                Job(
-                                    i + 1,
-                                    files[fstart:fend],
-                                    progress=self.progress,
-                                    rsync=self.rsync,
-                                    callback=self.process_progress,
-                                )
-                            )
+                Job(
+                    i + 1,
+                    files[fstart:fend],
+                    progress=self.progress,
+                    rsync=self.rsync,
+                    callback=self.process_progress,
+                )
+            )
 
     def start(self):
         self.progress.start()
@@ -151,10 +139,10 @@ class Syncer:
         return self
 
     def __exit__(
-                    self,
-                    exc_type: Optional[Type[BaseException]],
-                    exc_val: Optional[BaseException],
-                    exc_tb: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
     ):
 
         self.progress.stop()

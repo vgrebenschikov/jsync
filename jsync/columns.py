@@ -35,16 +35,10 @@ class FlexiColumn(ProgressColumn):
 
         if self.markup:
             text = Text.from_markup(
-                _text,
-                style=self.style,
-                justify=self.justify
+                _text, style=self.style, justify=self.justify
             )
         else:
-            text = Text(
-                _text,
-                style=self.style,
-                justify=self.justify
-            )
+            text = Text(_text, style=self.style, justify=self.justify)
 
         if self.highlighter:
             self.highlighter.highlight(text)

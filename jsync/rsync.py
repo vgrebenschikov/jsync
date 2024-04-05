@@ -1,4 +1,5 @@
 """Python class to wrap running of rsync binary in asynchroneous way"""
+
 import asyncio
 import re
 
@@ -10,7 +11,7 @@ class RSync:
         '--info=progress2',
         '--no-v',
         '--no-h',
-        '-v'
+        '-v',
     ]
 
     args_itemize = [
@@ -63,12 +64,13 @@ class RSync:
                 return e.partial
             except asyncio.exceptions.LimitOverrunError as e:
                 if self._buffer.startswith(sep, e.consumed):
-                    del self._buffer[:e.consumed + seplen]
+                    del self._buffer[: e.consumed + seplen]
                 else:
                     self._buffer.clear()
                 self._maybe_resume_transport()
                 raise ValueError(e.args[0])
             return line
+
         return readlinecr
 
     def itemize_command(self):
@@ -94,15 +96,15 @@ class RSync:
 
     async def itemize(self, progress_callback, error_callback):
         proc = await asyncio.create_subprocess_exec(
-                        *self.itemize_command(),
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
+            *self.itemize_command(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
         files = []
         await asyncio.gather(
             self.read_listing(proc, files, progress_callback),
-            self.read_errors(proc, error_callback)
+            self.read_errors(proc, error_callback),
         )
 
         await proc.wait()
@@ -125,13 +127,14 @@ class RSync:
     async def read_progress(self, proc, callback):
         while buf := await proc.stdout.readlinecr():
             for line in re.split(r'[\r\n]+', buf.decode()):
-                if line in ("sending incremental file list",
-                            "building file list ... done"):
+                if line in (
+                    "sending incremental file list",
+                    "building file list ... done",
+                ):
                     continue
 
                 if re.match(
-                    r'sent \S+ bytes  received \S+ bytes  \S+ bytes/sec',
-                    line
+                    r'sent \S+ bytes  received \S+ bytes  \S+ bytes/sec', line
                 ):
                     continue
 
@@ -151,23 +154,26 @@ class RSync:
         proc._transport.get_pipe_transport(2).close()
 
     def transfer_command(self):
-        return [self.rsync_cmd] + self.args_transfer + \
-            [self.source(), self.destination()]
+        return (
+            [self.rsync_cmd]
+            + self.args_transfer
+            + [self.source(), self.destination()]
+        )
 
     async def transfer(self, files, progress_callback, error_callback):
         asyncio.StreamReader.readlinecr = self.get_readlinecr()
 
         proc = await asyncio.create_subprocess_exec(
-                        *self.transfer_command(),
-                        stdin=asyncio.subprocess.PIPE,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
+            *self.transfer_command(),
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
         await asyncio.gather(
             self.feed_input(proc, files),
             self.read_progress(proc, progress_callback),
-            self.read_errors(proc, error_callback)
+            self.read_errors(proc, error_callback),
         )
 
         await proc.wait()

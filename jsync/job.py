@@ -21,12 +21,14 @@ class Job:
     rate: str
     callback: callable
 
-    def __init__(self,
-                 id: int,
-                 files: list,
-                 progress: Progress,
-                 rsync: RSync,
-                 callback: callable) -> None:
+    def __init__(
+        self,
+        id: int,
+        files: list,
+        progress: Progress,
+        rsync: RSync,
+        callback: callable,
+    ) -> None:
         self.id = id
         self.files = files
         self.progress = progress
@@ -108,7 +110,7 @@ class Job:
                 total=total,
                 completed=size,
                 rate=self.rate,
-                eta=elapsed_time(total, size, self.rate)
+                eta=elapsed_time(total, size, self.rate),
             )
             self.total = total
             self.size = size
@@ -136,6 +138,8 @@ class Job:
             )
             return
 
-        await self.rsync.transfer(self.files,
-                                  progress_callback=self.process_progress,
-                                  error_callback=self.process_error)
+        await self.rsync.transfer(
+            self.files,
+            progress_callback=self.process_progress,
+            error_callback=self.process_error,
+        )

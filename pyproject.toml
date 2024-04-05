@@ -19,4 +19,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.setuptools_scm]
 
+[tool.black]
+skip-string-normalization = 1
+line-length = 80
 

@@ -2,7 +2,7 @@ import re
 
 
 def dehumanize_rate(ssize):
-    """Converts rate string to number (like 231.89MB/s) of bytes per second """
+    """Converts rate string to number (like 231.89MB/s) of bytes per second"""
 
     m = re.match(r'([\d\.]+)([BKMGTPEZY]?)B/s+$', ssize, flags=re.IGNORECASE)
 

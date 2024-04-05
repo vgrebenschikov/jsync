@@ -6,14 +6,17 @@ from .syncer import Syncer
 
 
 def usage(e=''):
-    print(f"""{e}
+    print(
+        f"""{e}
 
 USAGE:
 
 --job=<num-jobs> -j<n>  - Parallelize rsync run in number of jobs
 ... rsync options ...
 
-""", file=sys.stderr)
+""",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 
@@ -38,7 +41,7 @@ async def main(argv):
                 usage()
 
         if cut:
-            argv = argv[0:cut[0]] + argv[cut[1]:]
+            argv = argv[0 : cut[0]] + argv[cut[1] :]
 
         if len(argv) < 2:
             raise Exception("Not enough rsync options provided")
