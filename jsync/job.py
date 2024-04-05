@@ -105,8 +105,9 @@ class Job:
                 self.total = total
 
             # print(
-            #       f'({self.id}) {line} total={total} size={size} '
-            #       f'percent={percent}%({size_percent:4.2f}%) delta={delta} scan={ndone}/{ntotal}'
+            #   f'({self.id}) {line} total={total} size={size} '
+            #   f'percent={percent}%({size_percent:4.2f}%) '
+            #   f'delta={delta} scan={ndone}/{ntotal}'
             # )
 
             self.progress.update(

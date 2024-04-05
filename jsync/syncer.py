@@ -93,7 +93,9 @@ class Syncer:
 
             task = self.progress._tasks[self.master]
             if task.total != ntotal:
-                self.progress.update(self.master, total=ntotal, completed=ndone)
+                self.progress.update(
+                    self.master, total=ntotal, completed=ndone
+                )
             else:
                 self.progress.advance(
                     self.master, advance=(ndone - task.completed)
