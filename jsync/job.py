@@ -51,7 +51,9 @@ class Job:
     def start(self):
         self.progress.start_task(self.task)
         cmd = ' '.join(self.rsync.transfer_command())
-        self.progress.console.print(f"[bright_cyan]Starting job #{self.id}: {cmd}")
+        self.progress.console.print(
+            f"[bright_cyan]Starting job #{self.id}:[/bright_cyan] {cmd}"
+        )
         self.running = True
 
     def active(self):
@@ -115,7 +117,6 @@ class Job:
             self.progress.update(
                 self.task,
                 rate=self.rate,
-                filename=self.file
             )
             self.progress.advance(self.task, delta)
             self.size = size
@@ -128,6 +129,7 @@ class Job:
                 f"[color({self.color})]{line}",
                 highlight=False,
             )
+            self.progress.update(self.task, filename=self.file)
 
     def process_error(self, err):
         self.progress.console.print(

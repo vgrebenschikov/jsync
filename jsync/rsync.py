@@ -52,6 +52,25 @@ class RSync:
 
         return '.'
 
+    def get_readlinecr(self):
+        async def readlinecr(self):
+            """overrides StreamReader.readline to make \r delimiter"""
+            sep = b'\r'
+            seplen = len(sep)
+            try:
+                line = await self.readuntil(sep)
+            except asyncio.exceptions.IncompleteReadError as e:
+                return e.partial
+            except asyncio.exceptions.LimitOverrunError as e:
+                if self._buffer.startswith(sep, e.consumed):
+                    del self._buffer[:e.consumed + seplen]
+                else:
+                    self._buffer.clear()
+                self._maybe_resume_transport()
+                raise ValueError(e.args[0])
+            return line
+        return readlinecr
+
     def itemize_command(self):
         return [self.rsync_cmd] + self.args + self.args_itemize
 
@@ -70,7 +89,6 @@ class RSync:
                             filename = filename[0:-1]
 
                         files.append((filename, attr))
-
 
         proc._transport.get_pipe_transport(1).close()
 
@@ -105,7 +123,7 @@ class RSync:
         proc.stdin.close()
 
     async def read_progress(self, proc, callback):
-        while buf := await proc.stdout.readline():
+        while buf := await proc.stdout.readlinecr():
             for line in re.split(r'[\r\n]+', buf.decode()):
                 if line in ("sending incremental file list",
                             "building file list ... done"):
@@ -137,6 +155,8 @@ class RSync:
             [self.source(), self.destination()]
 
     async def transfer(self, files, progress_callback, error_callback):
+        asyncio.StreamReader.readlinecr = self.get_readlinecr()
+
         proc = await asyncio.create_subprocess_exec(
                         *self.transfer_command(),
                         stdin=asyncio.subprocess.PIPE,
