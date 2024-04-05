@@ -55,7 +55,8 @@ class Job:
         self.progress.start_task(self.task)
         cmd = ' '.join(self.rsync.transfer_command())
         self.progress.console.print(
-            f"[bright_cyan]Starting job #{self.id}:[/bright_cyan] {cmd}"
+            f"[bright_cyan]Starting job #{self.id}:[/bright_cyan] {cmd}",
+            highlight=False,
         )
         self.running = True
 
@@ -97,8 +98,11 @@ class Job:
             else:
                 percent = total = 0
 
-            if self.total and not total:
+            self.size = size
+            if not total:
                 total = self.total
+            else:
+                self.total = total
 
             # print(
             #       f'({self.id}) {line} total={total} size={size} '
@@ -112,8 +116,6 @@ class Job:
                 rate=self.rate,
                 eta=elapsed_time(total, size, self.rate),
             )
-            self.total = total
-            self.size = size
 
             # Update progress on current file
             self.callback(delta, self)

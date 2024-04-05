@@ -103,8 +103,13 @@ class Syncer:
         self.progress.console.print(f"[red][bold]Error[/bold][/red]: {err}")
 
     async def itemize(self):
+        cmd = ' '.join(self.rsync.itemize_command())
         self.progress.console.print(
             "Calculating list of files for synchronization"
+        )
+        self.progress.console.print(
+            f"[bright_cyan]Executing:[/bright_cyan] {cmd}",
+            highlight=False,
         )
 
         files = await self.rsync.itemize(
