@@ -3,7 +3,7 @@ import re
 from rich.progress import Progress, TaskID
 
 from .rsync import RSync
-from .utils import dehumanize_rate
+from .utils import dehumanize_rate, elapsed_time
 
 
 class Job:
@@ -44,6 +44,7 @@ class Job:
             rate=0,
             filename='',
             percent='',
+            eta='',
             total=0,
             style=f'[color({self.color})]',
         )
@@ -75,11 +76,10 @@ class Job:
                 ndone = int(m.group(1))
                 ntotal = int(m.group(3))
             else:
-                return
-                # size, percent, rate, eta = line.split(None, 4)[:4]
+                size, percent, rate, eta = line.split(None, 4)[:4]
 
+            size = int(size)
             percent = int(percent.replace('%', ''))
-            size = int(size.replace(',', ''))
             self.rate = dehumanize_rate(rate)
 
             if percent < 10 and ntotal:
@@ -94,31 +94,23 @@ class Job:
                 delta = size - self.size
             else:
                 percent = total = 0
-                delta = 0
+
+            if self.total and not total:
+                total = self.total
 
             # print(
             #       f'({self.id}) {line} total={total} size={size} '
-            #       f'percent={percent}%({size_percent:4.2f}%) delta={delta}'
+            #       f'percent={percent}%({size_percent:4.2f}%) delta={delta} scan={ndone}/{ntotal}'
             # )
-
-            if self.total and total:
-                ptotal = self.progress._tasks[self.task].total
-                if not 0.8 < (total / self.total) < 1.2\
-                   or (self.size > ptotal or ptotal == 0):
-                    self.progress.update(
-                        self.task,
-                        total=total,
-                        completed=self.size
-                    )
-                    self.total = total
-            elif total:
-                self.total = total
 
             self.progress.update(
                 self.task,
+                total=total,
+                completed=size,
                 rate=self.rate,
+                eta=elapsed_time(total, size, self.rate)
             )
-            self.progress.advance(self.task, delta)
+            self.total = total
             self.size = size
 
             # Update progress on current file

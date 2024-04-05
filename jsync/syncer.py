@@ -8,13 +8,13 @@ from rich.progress import (
     Progress,
     SpinnerColumn,
     BarColumn,
-    TimeRemainingColumn,
     TaskProgressColumn,
 )
 
 from .job import Job
 from .rsync import RSync
 from .columns import FlexiColumn
+from .utils import elapsed_time
 
 
 class Syncer:
@@ -40,15 +40,20 @@ class Syncer:
             "{task.description}",
             SpinnerColumn(),
             BarColumn(),
-            TaskProgressColumn(),
+            TaskProgressColumn(
+                text_format='[bright_magenta]{task.percentage:>3.0f}%'
+            ),
             FlexiColumn(
                 lambda t: f'{sz(t.completed):>8} / {sz(t.total):<8}',
                 style="progress.download"
             ),
-            TimeRemainingColumn(),
+            FlexiColumn(
+                lambda t: f'{t.fields["eta"]}',
+                style='cyan'
+            ),
             FlexiColumn(
                 lambda t: f'{rt(t.fields["rate"]):>12}',
-                style="progress.download"
+                style='bright_green'
             ),
             FlexiColumn(
                 lambda t: f'  {t.fields["style"]}{t.fields["filename"]:<64}'
@@ -62,6 +67,7 @@ class Syncer:
             filename='',
             percent='',
             style='',
+            eta='',
         )
 
         self.jobs = []
@@ -69,18 +75,16 @@ class Syncer:
 
     def process_progress(self, advance, job):
         rate = sum([j.rate for j in self.jobs])
+        size = sum([j.size for j in self.jobs])
         total = sum([j.total for j in self.jobs])
 
-        if not self.total:
-            self.total = total
-        elif total and not (0.8 < self.total / total < 1.2):
-            self.progress.update(self.master, total=total)
-            self.total = total
-
-        self.progress.update(self.master, rate=rate)
-
-        if advance:
-            self.progress.advance(self.master, advance)
+        self.progress.update(
+            self.master,
+            rate=rate,
+            total=total,
+            completed=size,
+            eta=elapsed_time(total, size, rate),
+        )
 
     def process_itemize_progress(self, line):
         if '%' in line:
@@ -91,7 +95,7 @@ class Syncer:
                 ntotal = int(m.group(3))
             else:
                 return
- 
+
             task = self.progress._tasks[self.master]
             if task.total != ntotal:
                 self.progress.update(

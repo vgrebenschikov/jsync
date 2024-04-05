@@ -19,3 +19,15 @@ def dehumanize_rate(ssize):
                 break
 
     return ret
+
+
+def elapsed_time(total, size, rate):
+    eta = '  -:--:--'
+
+    if size <= total and rate:
+        sec_remaining = int((total - size) / rate)
+        minutes, seconds = divmod(sec_remaining, 60)
+        hours, minutes = divmod(minutes, 60)
+        eta = f"{hours:3d}:{minutes:02d}:{seconds:02d}"
+
+    return eta
