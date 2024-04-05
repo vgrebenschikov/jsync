@@ -51,7 +51,7 @@ class Job:
     def start(self):
         self.progress.start_task(self.task)
         cmd = ' '.join(self.rsync.transfer_command())
-        self.progress.log(f"[bright_cyan]Starting job #{self.id}: {cmd}")
+        self.progress.console.print(f"[bright_cyan]Starting job #{self.id}: {cmd}")
         self.running = True
 
     def active(self):
@@ -61,12 +61,12 @@ class Job:
         # file transferred:
         #   folder1/folder2/IMG_7440.xmp
         # progress reported:
-        #     14.12M   0%  263.33MB/s    0:00:00 (xfr#2, to-chk=22854/22861)
-        #      5.77M   0%    4.73MB/s    1:05:31
+        #  123455332   0%  263.33MB/s    0:00:00 (xfr#2, to-chk=22854/22861)
+        #     123345   0%    4.73MB/s    1:05:31
+        #    4538368 100%  136.61kB/s    0:00:32 (xfr#554, to-chk=0/557)
         percent = 0
-        filename = ''
         delta = None
-        if '%' in line:
+        if line[0] == ' ' and '% ' in line:
             ndone = ntotal = None
             if m := re.search(r'\(xfr#(\d+), to-chk=(\d+)/(\d+)\)', line):
                 size, percent, rate, eta, _, rest = line.split(None, 6)
@@ -123,10 +123,7 @@ class Job:
             # Update progress on current file
             self.callback(delta, self)
         else:
-            self.file = filename = line
-
-        if percent == 100 or filename:
-            # File complete
+            self.file = line
             self.progress.console.print(
                 f"[color({self.color})]{line}",
                 highlight=False,
