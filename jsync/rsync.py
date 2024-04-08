@@ -130,6 +130,7 @@ class RSync:
                 if line in (
                     "sending incremental file list",
                     "building file list ... done",
+                    "receiving file list ... done",
                 ):
                     continue
 
