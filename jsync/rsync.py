@@ -80,7 +80,10 @@ class RSync:
         while buf := await proc.stdout.readline():
             for line in re.split(r'[\r\n]+', buf.decode()):
                 if line:
+                    cdir = 'created directory '
                     if line[0] == ' ':
+                        callback(line)
+                    elif line.startswith(cdir):
                         callback(line)
                     else:
                         attr, filename = line[:12], line[13:]
@@ -131,7 +134,7 @@ class RSync:
                     "sending incremental file list",
                     "building file list ... done",
                     "receiving file list ... done",
-                ):
+                ) or line.startswith('created directory '):
                     continue
 
                 if re.match(
@@ -179,5 +182,9 @@ class RSync:
 
         await proc.wait()
 
-        if proc.returncode != 0:
+        if proc.returncode > 0:
+            print(f'rsync processes exited with rc={proc.returncode}')
             raise Exception(f'Error running rsync: rc={proc.returncode}')
+        elif proc.returncode < 0:
+            print(f'rsync processes exited due to signal {-proc.returncode}')
+            raise Exception(f'Error running rsync: signal {-proc.returncode}')

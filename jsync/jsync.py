@@ -53,6 +53,7 @@ async def main(argv):
         with Syncer(jobs_num, RSync(*argv)) as s:
             await s.itemize()
             await s.transfer()
+
     except Exception as e:
         print(f'Error: {e}', file=sys.stderr)
 

@@ -1,7 +1,7 @@
 import asyncio
 import re
 from types import TracebackType
-from typing import Optional, Type
+from typing import Optional, Type, List
 from humanize import naturalsize
 from rich.progress import (
     TaskID,
@@ -14,11 +14,11 @@ from rich.progress import (
 from .job import Job
 from .rsync import RSync
 from .columns import FlexiColumn
-from .utils import elapsed_time
+from .utils import elapsed_time, transfer_rate
 
 
 class Syncer:
-    jobs: list
+    jobs: List[Job]
     njobs: int
     total: int
     progress: Progress
@@ -32,10 +32,6 @@ class Syncer:
         def sz(size):
             return naturalsize(size, gnu=True)
 
-        def rt(size):
-            ret = naturalsize(size, gnu=True)
-            return ret + ("/s" if ret[-1].lower() == 'b' else "B/s")
-
         self.progress = Progress(
             "{task.description}",
             SpinnerColumn(),
@@ -47,9 +43,10 @@ class Syncer:
                 lambda t: f'{sz(t.completed):>8} / {sz(t.total):<8}',
                 style="progress.download",
             ),
-            FlexiColumn(lambda t: f'{t.fields["eta"]}', style='cyan'),
+            FlexiColumn(lambda t: f'{t.fields["eta"]:>10}', style='cyan'),
             FlexiColumn(
-                lambda t: f'{rt(t.fields["rate"]):>12}', style='bright_green'
+                lambda t: f'{transfer_rate(t.fields["rate"]):>12}',
+                style='bright_green'
             ),
             FlexiColumn(
                 lambda t: f'  {t.fields["style"]}{t.fields["filename"]:<64}'
@@ -163,4 +160,21 @@ class Syncer:
         for j in self.jobs:
             j.start()
 
-        await asyncio.gather(*[job.transfer() for job in self.jobs])
+        result = await asyncio.gather(
+            *[job.transfer() for job in self.jobs],
+            return_exceptions=True
+        )
+
+        nerrors = 0
+        for r, j in zip(result, self.jobs):
+            if isinstance(r, Exception):
+                nerrors += 1
+                self.progress.console.print(
+                    '[bright_red][bold]'
+                    f'Job #{j.id} Error: {r}'
+                    '[/bold][/bright_red]'
+                    '\n', '\n'.join(j.errors)
+                )
+
+        if nerrors:
+            raise Exception(f'{nerrors} rsyncs failed')

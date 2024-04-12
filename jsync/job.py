@@ -20,6 +20,7 @@ class Job:
     percent: float
     rate: str
     callback: callable
+    errors: list
 
     def __init__(
         self,
@@ -41,6 +42,7 @@ class Job:
         self.size = 0
         self.total = 0
         self.callback = callback
+        self.errors = []
         self.task = progress.add_task(
             f"rsync [bold yellow]#{id}",
             rate=0,
@@ -132,6 +134,7 @@ class Job:
         self.progress.console.print(
             f"[red][bold]{self.id}[/bold][/red] Error: {err}"
         )
+        self.errors.append(err)
 
     async def transfer(self):
         if not self.files:
@@ -141,8 +144,20 @@ class Job:
             )
             return
 
-        await self.rsync.transfer(
-            self.files,
-            progress_callback=self.process_progress,
-            error_callback=self.process_error,
-        )
+        try:
+            await self.rsync.transfer(
+                self.files,
+                progress_callback=self.process_progress,
+                error_callback=self.process_error,
+            )
+
+            self.progress.update(self.task, filename='done', rate=None, eta='')
+
+        except Exception as e:
+            self.progress.update(
+                                self.task,
+                                filename=f'rsync error: {e}',
+                                rate=None,
+                                eta='-failed-',
+            )
+            raise

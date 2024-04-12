@@ -1,4 +1,5 @@
 import re
+from humanize import naturalsize
 
 
 def dehumanize_rate(ssize):
@@ -31,3 +32,11 @@ def elapsed_time(total, size, rate):
         eta = f"{hours:3d}:{minutes:02d}:{seconds:02d}"
 
     return eta
+
+
+def transfer_rate(size):
+    if size is None:
+        return '-'
+
+    ret = naturalsize(size, gnu=True)
+    return ret + ("/s" if ret[-1].lower() == 'b' else "B/s")
