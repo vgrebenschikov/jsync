@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jsync"
-version = "0.1.8"
+version = "0.1.9"
 description = "Tool to run rsync utility in parallel"
 authors = ["Vladimir Grebenshchikov <vova@zote.me>"]
 readme = "README.md"
