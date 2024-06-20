@@ -151,9 +151,11 @@ class RSync:
         proc._transport.get_pipe_transport(1).close()
 
     async def read_errors(self, proc, callback):
-        while line := await proc.stderr.readline():
-            err = line.decode().replace('\n', '')
-            callback(err)
+        while buf := await proc.stderr.read(n=4096):
+            err = buf.decode()
+            for ln in err.split('\n') if '\n' in err else [err]:
+                if ln:
+                    callback(ln)
 
         proc._transport.get_pipe_transport(2).close()
 
