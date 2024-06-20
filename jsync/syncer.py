@@ -3,6 +3,7 @@ import re
 from types import TracebackType
 from typing import Optional, Type, List
 from humanize import naturalsize
+from rich.console import Console
 from rich.progress import (
     TaskID,
     Progress,
@@ -29,6 +30,12 @@ class Syncer:
         self.rsync = rsync or RSync()
         self.total = 0
 
+        self.jobs = []
+        self.njobs = njobs
+        self.console = Console()
+        self.progress = None
+
+    def init_progress(self):
         def sz(size):
             return naturalsize(size, gnu=True)
 
@@ -62,10 +69,12 @@ class Syncer:
             eta='',
         )
 
-        self.jobs = []
-        self.njobs = njobs
+        self.progress.start()
 
     def process_progress(self, advance, job):
+        if not self.progress:
+            self.init_progress()
+
         rate = sum([j.rate for j in self.jobs])
         size = sum([j.size for j in self.jobs])
         total = sum([j.total for j in self.jobs])
@@ -79,6 +88,9 @@ class Syncer:
         )
 
     def process_itemize_progress(self, line):
+        if not self.progress:
+            self.init_progress()
+
         if '%' in line:
             ndone = ntotal = None
             if m := re.search(r'\(xfr#(\d+), ir-chk=(\d+)/(\d+)\)', line):
@@ -99,14 +111,17 @@ class Syncer:
                 )
 
     def process_itemize_error(self, err):
+        if not self.progress:
+            self.init_progress()
+
         self.progress.console.print(f"[red][bold]Error[/bold][/red]: {err}")
 
     async def itemize(self):
         cmd = ' '.join(self.rsync.itemize_command())
-        self.progress.console.print(
+        self.console.print(
             "Calculating list of files for synchronization"
         )
-        self.progress.console.print(
+        self.console.print(
             f"[bright_cyan]Executing:[/bright_cyan] {cmd}",
             highlight=False,
         )
@@ -118,6 +133,9 @@ class Syncer:
 
         if not files:
             raise Exception('Nothing to do - no files to sync')
+
+        if not self.progress:
+            self.init_progress()
 
         size = len(files) // self.njobs
         self.progress.update(self.master, total=len(files))
@@ -136,10 +154,12 @@ class Syncer:
             )
 
     def start(self):
+        if not self.progress:
+            self.init_progress()
+
         self.progress.start()
 
     def __enter__(self):
-        self.start()
         return self
 
     def __exit__(
@@ -148,13 +168,16 @@ class Syncer:
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ):
-
-        self.progress.stop()
+        if self.progress:
+            self.progress.stop()
 
     def active(self):
         return any(map(lambda j: j.active(), self.jobs))
 
     async def transfer(self):
+        if not self.progress:
+            self.init_progress()
+
         self.progress.start_task(self.master)
 
         for j in self.jobs:
