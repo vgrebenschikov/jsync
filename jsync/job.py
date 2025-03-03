@@ -131,10 +131,15 @@ class Job:
             self.progress.update(self.task, filename=self.file)
 
     def process_error(self, err):
-        self.progress.console.print(
-            f"[red][bold]{self.id}[/bold][/red] Error: {err}"
-        )
-        self.errors.append(err)
+        self.errors += err
+
+        errors = self.errors.split('\n')
+        for e in errors[0:-1]:
+            self.progress.console.print(
+                f"[red][bold]{self.id}[/bold][/red] Error: {e}"
+            )
+
+        self.errors = errors[-1]
 
     async def transfer(self):
         if not self.files:
