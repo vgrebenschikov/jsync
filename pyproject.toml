@@ -10,11 +10,11 @@ python = "^3.10"
 humanize = "^4.9"
 rich = "^13.7"
 
-[tool.poetry.group.dev.dependencies]
-black = "^24"
-
 [tool.poetry.scripts]
 jsync = "jsync:synchronize"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.9"
 
 [build-system]
 requires = ["poetry-core"]
