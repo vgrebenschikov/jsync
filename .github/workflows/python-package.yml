@@ -45,6 +45,7 @@ jobs:
     - name: Install dependencies
       run: |
         poetry install
+        poetry dynamic-versioning enable
         poetry version
 
     - name: Run linter checks
