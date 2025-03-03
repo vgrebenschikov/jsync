@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jsync"
-version = "0.1.9"
+version = "0.1.0"
 description = "Tool to run rsync utility in parallel"
 authors = ["Vladimir Grebenshchikov <vova@zote.me>"]
 readme = "README.md"
@@ -24,5 +24,21 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 skip-string-normalization = 1
-line-length = 79
+line-length = 100
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+pattern = '(?P<base>\d+(\.\d+)*)'
+format-jinja = """
+{%- set major, minor, patch = base.split('.') -%}
+{%- if distance -%}
+    {%- if patch == '0' -%}
+        {{ major }}.{{ minor }}.{{ distance }}+g{{ commit }}
+    {%- else -%}
+        {{ base }}-{{ distance }}+g{{ commit }}
+    {%- endif -%}
+{%- else -%}
+    {{ base }}
+{%- endif -%}
+"""
