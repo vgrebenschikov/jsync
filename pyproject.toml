@@ -26,6 +26,12 @@ build-backend = "poetry.core.masonry.api"
 skip-string-normalization = 1
 line-length = 100
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "preserve"
+
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"

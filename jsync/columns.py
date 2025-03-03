@@ -34,9 +34,7 @@ class FlexiColumn(ProgressColumn):
         _text = self.func(task)
 
         if self.markup:
-            text = Text.from_markup(
-                _text, style=self.style, justify=self.justify
-            )
+            text = Text.from_markup(_text, style=self.style, justify=self.justify)
         else:
             text = Text(_text, style=self.style, justify=self.justify)
 

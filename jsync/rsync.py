@@ -114,8 +114,7 @@ class RSync:
 
         if proc.returncode != 0:
             raise Exception(
-                f'Error collecting list of files for synchronization: '
-                f'rc={proc.returncode}'
+                f'Error collecting list of files for synchronization: ' f'rc={proc.returncode}'
             )
 
         return files
@@ -137,9 +136,7 @@ class RSync:
                 ) or line.startswith('created directory '):
                     continue
 
-                if re.match(
-                    r'sent \S+ bytes  received \S+ bytes  \S+ bytes/sec', line
-                ):
+                if re.match(r'sent \S+ bytes  received \S+ bytes  \S+ bytes/sec', line):
                     continue
 
                 if re.match(r'total size is \S+  speedup is \S+', line):
@@ -160,11 +157,7 @@ class RSync:
         proc._transport.get_pipe_transport(2).close()
 
     def transfer_command(self):
-        return (
-            [self.rsync_cmd]
-            + self.args_transfer
-            + [self.source(), self.destination()]
-        )
+        return [self.rsync_cmd] + self.args_transfer + [self.source(), self.destination()]
 
     async def transfer(self, files, progress_callback, error_callback):
         asyncio.StreamReader.readlinecr = self.get_readlinecr()

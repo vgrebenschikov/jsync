@@ -46,7 +46,7 @@ async def main(argv):
                 verbose = True
 
         if cut:
-            argv = argv[0:cut[0]] + argv[cut[1]:]
+            argv = argv[0 : cut[0]] + argv[cut[1] :]
 
         if len(argv) < 2:
             raise Exception("Not enough rsync options provided")

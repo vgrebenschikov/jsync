@@ -135,9 +135,7 @@ class Job:
 
         errors = self.errors.split('\n')
         for e in errors[0:-1]:
-            self.progress.console.print(
-                f"[red][bold]{self.id}[/bold][/red] Error: {e}"
-            )
+            self.progress.console.print(f"[red][bold]{self.id}[/bold][/red] Error: {e}")
 
         self.errors = errors[-1]
 
@@ -160,9 +158,9 @@ class Job:
 
         except Exception as e:
             self.progress.update(
-                                self.task,
-                                filename=f'rsync error: {e}',
-                                rate=None,
-                                eta='-failed-',
+                self.task,
+                filename=f'rsync error: {e}',
+                rate=None,
+                eta='-failed-',
             )
             raise

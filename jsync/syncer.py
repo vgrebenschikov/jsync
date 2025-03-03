@@ -43,21 +43,14 @@ class Syncer:
             "{task.description}",
             SpinnerColumn(),
             BarColumn(),
-            TaskProgressColumn(
-                text_format='[bright_magenta]{task.percentage:>3.0f}%'
-            ),
+            TaskProgressColumn(text_format='[bright_magenta]{task.percentage:>3.0f}%'),
             FlexiColumn(
                 lambda t: f'{sz(t.completed):>8} / {sz(t.total):<8}',
                 style="progress.download",
             ),
             FlexiColumn(lambda t: f'{t.fields["eta"]:>10}', style='cyan'),
-            FlexiColumn(
-                lambda t: f'{transfer_rate(t.fields["rate"]):>12}',
-                style='bright_green'
-            ),
-            FlexiColumn(
-                lambda t: f'  {t.fields["style"]}{t.fields["filename"]:<64}'
-            ),
+            FlexiColumn(lambda t: f'{transfer_rate(t.fields["rate"]):>12}', style='bright_green'),
+            FlexiColumn(lambda t: f'  {t.fields["style"]}{t.fields["filename"]:<64}'),
         )
 
         self.master = self.progress.add_task(
@@ -102,13 +95,9 @@ class Syncer:
 
             task = self.progress._tasks[self.master]
             if task.total != ntotal:
-                self.progress.update(
-                    self.master, total=ntotal, completed=ndone
-                )
+                self.progress.update(self.master, total=ntotal, completed=ndone)
             else:
-                self.progress.advance(
-                    self.master, advance=(ndone - task.completed)
-                )
+                self.progress.advance(self.master, advance=(ndone - task.completed))
 
     def process_itemize_error(self, err):
         if not self.progress:
@@ -118,9 +107,7 @@ class Syncer:
 
     async def itemize(self):
         cmd = ' '.join(self.rsync.itemize_command())
-        self.console.print(
-            "Calculating list of files for synchronization"
-        )
+        self.console.print("Calculating list of files for synchronization")
         self.console.print(
             f"[bright_cyan]Executing:[/bright_cyan] {cmd}",
             highlight=False,
@@ -184,8 +171,7 @@ class Syncer:
             j.start()
 
         result = await asyncio.gather(
-            *[job.transfer() for job in self.jobs],
-            return_exceptions=True
+            *[job.transfer() for job in self.jobs], return_exceptions=True
         )
 
         nerrors = 0
@@ -193,10 +179,8 @@ class Syncer:
             if isinstance(r, Exception):
                 nerrors += 1
                 self.progress.console.print(
-                    '[bright_red][bold]'
-                    f'Job #{j.id} Error: {r}'
-                    '[/bold][/bright_red]'
-                    '\n', '\n'.join(j.errors)
+                    '[bright_red][bold]' f'Job #{j.id} Error: {r}' '[/bold][/bright_red]' '\n',
+                    '\n'.join(j.errors),
                 )
 
         if nerrors:
