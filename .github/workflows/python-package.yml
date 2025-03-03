@@ -28,9 +28,8 @@ jobs:
     - name: Ensure branch is checked out
       run: |
         git checkout $(git rev-parse --abbrev-ref HEAD)
-
-    - name: Show branch info
-      run: git branch --show-current
+        git describe
+        git branch --show-current
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
