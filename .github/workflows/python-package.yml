@@ -24,10 +24,11 @@ jobs:
       with:
         ref: ${{ github.ref_name }}
         fetch-depth: 0
+        fetch-tags: true
 
     - name: Ensure branch is checked out
       run: |
-        git checkout $(git rev-parse --abbrev-ref HEAD)
+        #git checkout $(git rev-parse --abbrev-ref HEAD)
         git describe
         git branch --show-current
 
