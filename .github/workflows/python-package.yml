@@ -36,6 +36,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+      post-install: poetry self add poetry-dynamic-versioning
 
     - name: Run image
       uses: abatilo/actions-poetry@v2
@@ -45,8 +46,6 @@ jobs:
     - name: Install dependencies
       run: |
         poetry install
-        poetry dynamic-versioning enable
-        poetry version
 
     - name: Run linter checks
       run: |

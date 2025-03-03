@@ -15,7 +15,6 @@ jsync = "jsync:synchronize"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.9"
-poetry-dynamic-versioning = "^1.7.1"
 
 [build-system]
 requires = ["poetry-core", "poetry-dynamic-versioning"]
