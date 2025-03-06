@@ -114,7 +114,7 @@ class RSync:
 
         if proc.returncode != 0:
             raise Exception(
-                f'Error collecting list of files for synchronization: ' f'rc={proc.returncode}'
+                f'Error collecting list of files for synchronization: rc={proc.returncode}'
             )
 
         return files
@@ -150,7 +150,7 @@ class RSync:
     async def read_errors(self, proc, callback):
         while buf := await proc.stderr.read(n=4096):
             err = buf.decode()
-            for ln in err.split('\n') if '\n' in err else [err]:
+            for ln in err.split('\n'):
                 if ln:
                     callback(ln)
 

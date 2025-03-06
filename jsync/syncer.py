@@ -179,8 +179,8 @@ class Syncer:
             if isinstance(r, Exception):
                 nerrors += 1
                 self.progress.console.print(
-                    '[bright_red][bold]' f'Job #{j.id} Error: {r}' '[/bold][/bright_red]' '\n',
-                    '\n'.join(j.errors),
+                    f'[bright_red][bold]Job #{j.id} Error: {r}[/bold][/bright_red]\n',
+                    '\n'.join(j.error_buf),
                 )
 
         if nerrors:

@@ -18,9 +18,9 @@ class Job:
     size: int
     total: int
     percent: float
-    rate: str
+    rate: float
     callback: callable
-    errors: list
+    error_buf: str
 
     def __init__(
         self,
@@ -42,7 +42,7 @@ class Job:
         self.size = 0
         self.total = 0
         self.callback = callback
-        self.errors = []
+        self.error_buf = ''
         self.task = progress.add_task(
             f"rsync [bold yellow]#{id}",
             rate=0,
@@ -131,13 +131,13 @@ class Job:
             self.progress.update(self.task, filename=self.file)
 
     def process_error(self, err):
-        self.errors += err
+        self.error_buf += err
 
-        errors = self.errors.split('\n')
-        for e in errors[0:-1]:
+        errors = self.error_buf.split('\n')
+        self.error_buf = errors.pop()  # last part - not finished line, keep it
+
+        for e in errors:
             self.progress.console.print(f"[red][bold]{self.id}[/bold][/red] Error: {e}")
-
-        self.errors = errors[-1]
 
     async def transfer(self):
         if not self.files:

@@ -23,7 +23,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 [tool.setuptools_scm]
 
 [tool.black]
-skip-string-normalization = 1
+skip-string-normalization = true
 line-length = 100
 
 [tool.ruff]
