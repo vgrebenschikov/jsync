@@ -180,7 +180,7 @@ class Syncer:
                 nerrors += 1
                 self.progress.console.print(
                     f'[bright_red][bold]Job #{j.id} Error: {r}[/bold][/bright_red]\n',
-                    '\n'.join(j.error_buf),
+                    j.error_buf,
                 )
 
         if nerrors:
