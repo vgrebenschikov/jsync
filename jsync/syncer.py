@@ -1,28 +1,29 @@
 import asyncio
 import re
 from types import TracebackType
-from typing import Optional, Type, List
+from typing import Optional
+
 from humanize import naturalsize
 from rich.console import Console
 from rich.progress import (
-    TaskID,
+    BarColumn,
     Progress,
     SpinnerColumn,
-    BarColumn,
+    TaskID,
     TaskProgressColumn,
 )
 
+from .columns import FlexiColumn
 from .job import Job
 from .rsync import RSync
-from .columns import FlexiColumn
 from .utils import elapsed_time, transfer_rate
 
 
 class Syncer:
-    jobs: List[Job]
+    jobs: list[Job]
     njobs: int
     total: int
-    progress: Progress
+    progress: Optional[Progress]
     master: TaskID
     rsync: RSync
 
@@ -151,7 +152,7 @@ class Syncer:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ):
@@ -159,7 +160,7 @@ class Syncer:
             self.progress.stop()
 
     def active(self):
-        return any(map(lambda j: j.active(), self.jobs))
+        return any(j.active() for j in self.jobs)
 
     async def transfer(self):
         if not self.progress:

@@ -4,8 +4,8 @@ from rich.progress import (
     Column,
     Highlighter,
     JustifyMethod,
-    StyleType,
     ProgressColumn,
+    StyleType,
     Task,
     Text,
 )
