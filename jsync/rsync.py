@@ -68,7 +68,7 @@ class RSync:
                 else:
                     self._buffer.clear()
                 self._maybe_resume_transport()
-                raise ValueError(e.args[0])
+                raise ValueError(e.args[0]) from e
             return line
 
         return readlinecr

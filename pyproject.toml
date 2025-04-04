@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 humanize = "^4.9"
-rich = "^13.7"
+rich = "^14.0"
 
 [tool.poetry.scripts]
 jsync = "jsync:synchronize"
