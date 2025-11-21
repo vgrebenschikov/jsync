@@ -12,12 +12,14 @@ class FileInfo:
     attrs: str
     size: int
     index: int = 0
+    is_dir: bool = False
 
 
 class RSync:
     rsync_cmd = 'rsync'
     args_transfer = [
         '--files-from=-',
+        '--dirs',  # Process directories, but don't recurse into them from --files-from
         '--info=progress2',
         '--no-v',
         '--no-h',
@@ -102,6 +104,9 @@ class RSync:
                         attr = line[:12]
                         rest = line[13:].strip()
 
+                        # Check if this is a directory (attributes start with 'd' or 'cd')
+                        is_dir = attr[0] == 'd' or attr.startswith('cd')
+
                         # Parse size and filename
                         # Split by space, first part is size, rest is filename
                         parts = rest.split(None, 1)
@@ -124,7 +129,13 @@ class RSync:
                         # Use current length of files list as index to preserve original order
                         index = len(files)
                         files.append(
-                            FileInfo(filename=filename, attrs=attr, size=size, index=index)
+                            FileInfo(
+                                filename=filename,
+                                attrs=attr,
+                                size=size,
+                                index=index,
+                                is_dir=is_dir,
+                            )
                         )
 
         proc._transport.get_pipe_transport(1).close()
