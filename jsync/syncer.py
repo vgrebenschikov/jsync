@@ -125,16 +125,32 @@ class Syncer:
         if not self.progress:
             self.init_progress()
 
-        size = len(files) // self.njobs
+        # Distribute files by size to balance workload across jobs
         self.progress.update(self.master, total=len(files))
 
+        # Initialize job lists and their current sizes
+        job_files = [[] for _ in range(self.njobs)]
+        job_sizes = [0] * self.njobs
+
+        # Distribute files to jobs, trying to balance by size
+        # Use greedy algorithm: assign each file to the job with smallest current size
+        for file in files:
+            # Get file size (default to 0 if not available)
+            file_size = file[2] if len(file) > 2 else 0
+
+            # Find job with smallest current size
+            min_job_idx = min(range(self.njobs), key=lambda i: job_sizes[i])
+
+            # Assign file to this job
+            job_files[min_job_idx].append(file)
+            job_sizes[min_job_idx] += file_size
+
+        # Create jobs with distributed files
         for i in range(self.njobs):
-            fstart = i * size
-            fend = fstart + size if i < self.njobs - 1 else len(files)
             self.jobs.append(
                 Job(
                     i + 1,
-                    files[fstart:fend],
+                    job_files[i],
                     progress=self.progress,
                     rsync=self.rsync,
                     callback=self.process_progress,

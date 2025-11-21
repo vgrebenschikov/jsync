@@ -17,6 +17,7 @@ class RSync:
     args_itemize = [
         '--dry-run',
         '--itemize-changes',
+        '--out-format=%i %l %n',
         '--no-v',
         '--no-h',
         '--info=progress2',
@@ -86,14 +87,31 @@ class RSync:
                     elif line.startswith(cdir):
                         callback(line)
                     else:
-                        attr, filename = line[:12], line[13:]
+                        # Format: %i %l %n -> ">f++++++++++ 259678 filename"
+                        # First 12 chars are attributes, then size, then filename
+                        attr = line[:12]
+                        rest = line[13:].strip()
+
+                        # Parse size and filename
+                        # Split by space, first part is size, rest is filename
+                        parts = rest.split(None, 1)
+                        if len(parts) >= 2:
+                            size_str, filename = parts[0], parts[1]
+                            try:
+                                size = int(size_str)
+                            except ValueError:
+                                size = 0
+                        else:
+                            # Fallback for old format (no size)
+                            filename = rest
+                            size = 0
 
                         # cut trailing slash
                         # (due to different meaning in rsync files-from)
                         if filename[-1] == '/':
                             filename = filename[0:-1]
 
-                        files.append((filename, attr))
+                        files.append((filename, attr, size))
 
         proc._transport.get_pipe_transport(1).close()
 
