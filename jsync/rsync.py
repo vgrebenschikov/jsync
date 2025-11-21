@@ -2,6 +2,16 @@
 
 import asyncio
 import re
+from dataclasses import dataclass
+
+
+@dataclass
+class FileInfo:
+    """Information about a file to be synced"""
+    filename: str
+    attrs: str
+    size: int
+    index: int = 0
 
 
 class RSync:
@@ -111,7 +121,11 @@ class RSync:
                         if filename[-1] == '/':
                             filename = filename[0:-1]
 
-                        files.append((filename, attr, size))
+                        # Use current length of files list as index to preserve original order
+                        index = len(files)
+                        files.append(
+                            FileInfo(filename=filename, attrs=attr, size=size, index=index)
+                        )
 
         proc._transport.get_pipe_transport(1).close()
 
@@ -139,7 +153,7 @@ class RSync:
 
     async def feed_input(self, proc, files):
         for f in files:
-            proc.stdin.write((f[0] + '\n').encode('utf-8'))
+            proc.stdin.write((f.filename + '\n').encode('utf-8'))
             await proc.stdin.drain()
 
         proc.stdin.close()

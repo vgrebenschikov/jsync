@@ -132,18 +132,24 @@ class Syncer:
         job_files = [[] for _ in range(self.njobs)]
         job_sizes = [0] * self.njobs
 
-        # Distribute files to jobs, trying to balance by size
-        # Use greedy algorithm: assign each file to the job with smallest current size
-        for file in files:
-            # Get file size (default to 0 if not available)
-            file_size = file[2] if len(file) > 2 else 0
+        # Sort files by size (descending) for better load balancing
+        # This is the "First Fit Decreasing" (FFD) / "Longest Processing Time" (LPT) algorithm
+        # It ensures large files are distributed first, leading to more balanced distribution
+        sorted_files = sorted(files, key=lambda f: f.size, reverse=True)
 
+        # Distribute files to jobs using greedy algorithm on sorted list
+        # Assign each file to the job with smallest current size
+        for file in sorted_files:
             # Find job with smallest current size
             min_job_idx = min(range(self.njobs), key=lambda i: job_sizes[i])
 
             # Assign file to this job
             job_files[min_job_idx].append(file)
-            job_sizes[min_job_idx] += file_size
+            job_sizes[min_job_idx] += file.size
+
+        # Restore original order within each job
+        for i in range(self.njobs):
+            job_files[i].sort(key=lambda f: f.index)
 
         # Create jobs with distributed files
         for i in range(self.njobs):
@@ -154,6 +160,7 @@ class Syncer:
                     progress=self.progress,
                     rsync=self.rsync,
                     callback=self.process_progress,
+                    total_size=job_sizes[i],
                 )
             )
 

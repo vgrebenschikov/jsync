@@ -1,6 +1,7 @@
 import random
 import re
 
+from humanize import naturalsize
 from rich.progress import Progress, TaskID
 
 from .rsync import RSync
@@ -18,6 +19,7 @@ class Job:
     file: str
     size: int
     total: int
+    total_size: int
     percent: float
     rate: float
     callback: callable
@@ -30,6 +32,7 @@ class Job:
         progress: Progress,
         rsync: RSync,
         callback: callable,
+        total_size: int = 0,
     ) -> None:
         self.id = id
         self.files = files
@@ -42,6 +45,7 @@ class Job:
         self.percent = 0
         self.size = 0
         self.total = 0
+        self.total_size = total_size
         self.callback = callback
         self.error_buf = ''
         self.task = progress.add_task(
@@ -57,8 +61,11 @@ class Job:
     def start(self):
         self.progress.start_task(self.task)
         cmd = ' '.join(self.rsync.transfer_command())
+        num_files = len(self.files)
+        total_size_str = naturalsize(self.total_size, gnu=True)
         self.progress.console.print(
-            f"[bright_cyan]Starting job #{self.id}:[/bright_cyan] {cmd}",
+            f"[bright_cyan]Starting job #{self.id}:[/bright_cyan] {cmd} "
+            f"({total_size_str} in {num_files:,} files)",
             highlight=False,
         )
         self.running = True
